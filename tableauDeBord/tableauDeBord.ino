@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <LiquidCrystal.h>
 
+#define BUZZER 3
 #define PIN_FAN 8
 #define PIN_ECHO 9
 #define PIN_TRIGER 10
@@ -18,6 +19,8 @@ const int LCD_NB_COLUMNS = 16;
 
 const int PWM_LOW = 0;
 const int PWM_HIGH = 255;
+
+const int FREQUENCY = 255;
 
 int buttonCount = 0;
 
@@ -79,6 +82,32 @@ void distanceAndBuzz() {
     LCD.print(F(" cm  "));
   }
 
+  if (distanceCm < 5) {
+    tone(BUZZER, FREQUENCY);
+  } else if (distanceCm < 10) {
+    tone(BUZZER, FREQUENCY);
+    delay(50);
+    noTone(BUZZER);
+  } else if (distanceCm < 15) {
+    tone(BUZZER, FREQUENCY);
+    delay(100);
+    noTone(BUZZER);
+  } else if (distanceCm < 20) {
+    tone(BUZZER, FREQUENCY);
+    delay(150);
+    noTone(BUZZER);
+  } else if (distanceCm < 30) {
+    tone(BUZZER, FREQUENCY);
+    delay(200);
+    noTone(BUZZER);
+  } else if (distanceCm < 40) {
+    tone(BUZZER, FREQUENCY);
+    delay(250);
+    noTone(BUZZER);
+  } else {
+    noTone(BUZZER);
+  }
+
   delay(200);
 }
 
@@ -91,10 +120,12 @@ void setup() {
   pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
 
+  pinMode(BUZZER, OUTPUT);
   pinMode(PIN_FAN, OUTPUT);
   pinMode(PIN_TRIGER, OUTPUT);
   pinMode(PIN_ECHO, INPUT);
 
+  analogWrite(BUZZER, PWM_LOW);
   analogWrite(LED_RED, PWM_LOW);
   analogWrite(LED_GREEN, PWM_LOW);
   analogWrite(LED_BLUE, PWM_LOW);
