@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <LiquidCrystal.h>
 
+#define BUTTON 2
 #define BUZZER 3
 #define PIN_FAN 8
 #define PIN_ECHO 9
@@ -10,6 +11,7 @@
 #define LED_RED A1
 #define LED_GREEN A2
 #define LED_YELLOW A3
+#define BRIGHTNESS A4
 
 DHT DHT(13, DHT11);
 LiquidCrystal LCD(12, 11, 4, 5, 6, 7);
@@ -23,11 +25,22 @@ const int PWM_HIGH = 255;
 const int FREQUENCY = 255;
 
 int buttonCount = 0;
+int buttonState = 0;
+
+int brightnessValue = 0;
 
 int distanceCm;
 long duration;
 
-void temperatureAndHumidity() {
+
+void startMenu() {
+  LCD.setCursor(0, 0);
+  LCD.print("Press the button");
+  LCD.setCursor(0, 1);
+  LCD.print("To change mode");
+}
+
+void getTemperatureAndHumidity() {
   float humidity = DHT.readHumidity();
   float temperature = DHT.readTemperature();
 
@@ -60,7 +73,7 @@ void temperatureAndHumidity() {
   LCD.print(temperature);
 }
 
-void distanceAndBuzz() {
+void getDistanceAndBuzz() {
   digitalWrite(PIN_TRIGER, LOW);
   delay(5);
   digitalWrite(PIN_TRIGER, HIGH);
@@ -111,9 +124,24 @@ void distanceAndBuzz() {
   delay(200);
 }
 
+void getBrightness() {
+  brightnessValue = analogRead(BRIGHTNESS);
+
+  LCD.setCursor(0, 0);
+  LCD.print("Brightness: ");
+  LCD.print(brightnessValue);
+  LCD.print(F(" lux  "));
+  LCD.scrollDisplayLeft();
+  
+  delay(500);
+}
+
 void setup() {
   DHT.begin();
   LCD.begin(LCD_NB_COLUMNS, LCD_NB_ROWS);
+
+  pinMode(BUTTON, INPUT);
+  pinMode(BRIGHTNESS, INPUT);
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
@@ -136,11 +164,24 @@ void setup() {
 }
 
 void loop() {
-  if (buttonCount == 0) {
-    temperatureAndHumidity();
-  } else if (buttonCount == 1) {
-    distanceAndBuzz();
-  } else {
+  buttonState = digitalRead(BUTTON);
+
+  if (buttonState == HIGH) {
+    buttonCount++;
     LCD.clear();
+    delay(500);
+  } else if (3 < buttonCount) {
+    buttonCount = 0;
+    LCD.clear();
+  }
+
+  if (buttonCount == 0) {
+    startMenu();
+  } else if (buttonCount == 1) {
+    getTemperatureAndHumidity();
+  } else if (buttonCount == 2) {
+    getDistanceAndBuzz();
+  } else if (buttonCount == 3) {
+    getBrightness();
   }
 }
